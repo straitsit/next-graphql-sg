@@ -4,6 +4,7 @@ import { Q_REG_FIELDS, Q_REG_VALUES } from '../constants/gql';
 import { Fragment } from 'react';
 import Image from 'next/image'
 import MultiSelect from 'react-multi-select-component';
+import COUNTRY_LIST from '../constants/country_names';
 
 const IndexPage = props => {
     const [lazyStart, setLazyStart] = useState(false);
@@ -12,7 +13,7 @@ const IndexPage = props => {
     const [regFields, setRegFields] = useState([]);
     const [totalFields, setTotalFields] = useState([]);
 
-    const [fieldParams, setFieldParams] = useState({ sort: "id", limit: 1, start: 0 });
+    const [fieldParams, setFieldParams] = useState({ sort: "id", limit: 70, start: 0 });
 
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [countryOptions, setCountryOptions] = useState([]);
@@ -28,6 +29,29 @@ const IndexPage = props => {
     useEffect(() => {
         regFieldsFilter();
     }, [selectedCategories, selectedCountries, selectedTitles, totalFields, totalCountries]);
+
+    useEffect(() => {
+        setTitleSelect(titleOptions);
+    }, [titleOptions]);
+
+    useEffect(() => {
+        if(totalFields.length != 0) {
+            titleOptionFilter();
+        }
+    }, [selectedCategories, totalFields]);
+
+    const titleOptionFilter = () => {
+        let titles = [];
+        let categories = selectedCategories.map(cat => cat.value);
+        totalFields.forEach(field => { 
+            if(categories.includes(field.category)) {
+                field.features.forEach(feature => {
+                    titles.push({label: feature.title, value: feature.title});
+                });
+            }
+        });
+        setTitleOptions(titles);
+    }
 
     const regFieldsFilter = () => {
         // Filter by category
@@ -81,8 +105,9 @@ const IndexPage = props => {
         setTotalCountries(countries);
 
         // Set country multi options
-        setCountryOptions(countries.map(country => { return { label: country.name, value: country.name } }));
-        setCountrySelect(countries.map(country => { return { label: country.name, value: country.name } }));
+        const country_options = countries.map(country => { return { label: country.name, value: country.name } });
+        setCountryOptions(country_options);
+        setCountrySelect(country_options.slice(0, 4));
 
         // Set categories multi options
         let categories = [];
@@ -109,9 +134,13 @@ const IndexPage = props => {
         setTotalFields(regFields);
     }
 
+    const setCountrySelectC = (items) => {
+        if (items.length > 4) return;
+        setCountrySelect(items);
+    }
+
     if (!loading && !error && !lazyStart) {
         setLazyStart(true);
-        console.log('[fields]', fields);
         getRegValues(fields.regFields);
     }
 
@@ -125,12 +154,12 @@ const IndexPage = props => {
                     <div className="max-w-7xl mx-auto bg-white py-16 sm:py-24 sm:px-6 lg:px-8">
                         <div className="grid gap-4 xs:grid-cols-1 sm:grid-cols-1 mb-9 md:grid-cols-3 px-4">
                             <div>
-                                <label htmlFor="">Category</label>
-                                <MultiSelect className="w-full" options={categoryOptions} value={selectedCategories} onChange={setCategorySelect} labelledBy="Select" />
+                                <label htmlFor="">Country</label>
+                                <MultiSelect className="w-full" options={countryOptions} value={selectedCountries} onChange={setCountrySelectC} labelledBy="Select" />
                             </div>
                             <div>
-                                <label htmlFor="">Country</label>
-                                <MultiSelect className="w-full" options={countryOptions} value={selectedCountries} onChange={setCountrySelect} labelledBy="Select" />
+                                <label htmlFor="">Category</label>
+                                <MultiSelect className="w-full" options={categoryOptions} value={selectedCategories} onChange={setCategorySelect} labelledBy="Select" />
                             </div>
                             <div>
                                 <label htmlFor="">Title</label>
@@ -142,17 +171,15 @@ const IndexPage = props => {
                             {regCountries.map((regVal, regValIdx) => (
                                 <section key={regVal.name}>
                                     <div className="px-4 mb-8">
-                                        <h2 className="text-lg leading-6 font-medium text-gray-900">{regVal.name}</h2>
-                                        <div className="mt-4">
-                                            <span className="text-base font-medium text-gray-500">
-                                                <a
-                                                    href={regVal.href}
-                                                    className=""
-                                                >
-                                                    <Image src={regVal.href} alt="Flag" width="64" height="64" />
-                                                </a>
-                                            </span>
-                                        </div>
+                                        <h2 className="text-lg leading-6 font-medium text-gray-900 text-center">
+                                            <a
+                                                href={regVal.href}
+                                                className="bottom-0 flex-grow block w-full rounded-md 5 py-2 text-sm font-semibold text-white"
+                                            >
+                                                <Image src={regVal.href} alt="Flag" width="64" height="64" />
+                                            </a>
+                                            {COUNTRY_LIST[regVal.name]}
+                                        </h2>
                                     </div>
                                     {regFields.map((section) => (
                                         <table key={section.category} className="w-full">
@@ -176,13 +203,7 @@ const IndexPage = props => {
                                                             {feature.title}
                                                         </th>
                                                         <td className="py-5 pr-4">
-                                                            {typeof feature.regValues[regVal.name] === 'string' ? (
-                                                                <span className="block text-sm text-gray-700 text-right">{feature.regValues[regVal.name]}</span>
-                                                            ) : (
-                                                                <>
-                                                                    <span className="sr-only">{feature.regValues[regVal.name] === true ? 'Yes' : 'No'}</span>
-                                                                </>
-                                                            )}
+                                                            <span className="block text-sm text-gray-700 text-right">{feature.regValues[regVal.name]}</span>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -195,49 +216,38 @@ const IndexPage = props => {
 
                         {/* lg+ */}
                         <div className="hidden lg:block overflow-auto">
-                            <table className="w-full h-px">
+                            <table className="w-full h-px border-collapse table-fixed">
                                 <caption className="sr-only">Pricing plan comparison</caption>
                                 <thead>
                                     <tr>
-                                        <th className="w-1/4 pb-4 px-6 text-sm font-medium text-gray-900 text-left" scope="col">
+                                        <th className="w-48 pb-4 px-6 text-sm font-medium text-gray-900 text-left border border-gray-200" scope="col">
                                             <span className="sr-only">Feature by</span>
                                             <span>Country</span>
                                         </th>
                                         {regCountries.map((regVal) => (
                                             <th
                                                 key={regVal.name}
-                                                className="pb-4 px-9 text-lg leading-6 font-medium text-gray-900 text-center"
+                                                className="pb-4 px-9 text-lg leading-6 font-medium text-gray-900 text-center border border-gray-200 w-auto"
                                                 scope="col"
                                             >
-                                                {regVal.name}
+                                                <a
+                                                    href={regVal.href}
+                                                    className="bottom-0 flex-grow block w-full rounded-md 5 py-2 text-sm font-semibold text-white text-center"
+                                                >
+                                                    <Image src={regVal.href} alt="Flag" width="64" height="64" />
+                                                </a>
+                                                {COUNTRY_LIST[regVal.name]}
+
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody className="border-t border-gray-200 divide-y divide-gray-200">
-                                    <tr>
-                                        <th className="py-8 px-6 text-sm font-medium text-gray-900 text-left align-top" scope="row">
-                                            Flag
-                </th>
-                                        {regCountries.map((regVal) => (
-                                            <td key={regVal.name} className="h-full py-1 px-1 align-top">
-                                                <div className="relative h-full table w-full">
-
-                                                    <a
-                                                        href={regVal.href}
-                                                        className="absolute bottom-0 flex-grow block w-full h-full rounded-md 5 py-2 text-sm font-semibold text-white text-center"
-                                                    >
-                                                        <Image src={regVal.href} alt="Flag" width="64" height="64" />
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        ))}
-                                    </tr>
                                     {regFields.map((section) => (
                                         <Fragment key={section.category}>
                                             <tr>
                                                 <th
-                                                    className="bg-gray-50 py-3 pl-6 text-sm font-medium text-gray-900 text-left"
+                                                    className="bg-gray-50 py-3 pl-6 text-sm font-medium text-gray-900 text-left border border-gray-200"
                                                     colSpan={regCountries.length + 1}
                                                     scope="colgroup"
                                                 >
@@ -246,13 +256,13 @@ const IndexPage = props => {
                                             </tr>
                                             {section.features.map((feature) => (
                                                 <tr key={feature.title}>
-                                                    <th className="py-5 text-sm font-normal text-gray-500 text-left" scope="row">
+                                                    <th className="py-5 text-sm font-normal text-gray-500 text-left border border-gray-200" scope="row">
                                                         {feature.title}
                                                     </th>
                                                     {regCountries.map((regVal) => (
-                                                        <td key={regVal.name} className="py-5 px-1">
-                                                            <span className="block text-sm text-gray-700">
-                                                                <input readOnly className="w-full" type="text" value={feature.regValues[regVal.name]} />
+                                                        <td key={regVal.name} className="py-5 px-1 border border-gray-200">
+                                                            <span className="block text-sm text-gray-700 max-h-16 overflow-y-auto cell-scrollbar overflow-x-hidden overflow-ellipsis">
+                                                                {feature.regValues[regVal.name]}
                                                             </span>
                                                         </td>
                                                     ))}
@@ -265,7 +275,7 @@ const IndexPage = props => {
                                     <tr className="border-t border-gray-200">
                                         <th className="sr-only" scope="row">
                                             Choose your plan
-                </th>
+                                        </th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -273,39 +283,6 @@ const IndexPage = props => {
                     </div>
                 </div>
             }
-            {/* {
-        regData.length != 0 &&
-        <div className="w-full overflow-auto max-h-96">
-          <table className="table-auto w-full border border-green-800 mb-4">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="border border-gray-200 p-0.5">Title</th>
-                <th className="border border-gray-200 p-0.5">Category</th>
-                <th className="border border-gray-200 p-0.5">Generic</th>
-                {
-                  Object.keys(regData[0].values).map((key, index) => (
-                    <th className="border border-gray-200 p-0.5" key={index}>{key}</th>
-                  ))
-                }
-              </tr>
-            </thead>
-            <tbody>
-              {
-                regData.map((item, index) => (
-                  <tr key={index}>
-                    <td className="border border-gray-200 p-0.5"><input readOnly value={item.title} /></td>
-                    <td className="border border-gray-200 p-0.5"><input readOnly value={item.category} /></td>
-                    <td className="border border-gray-200 p-0.5"></td>
-                    {Object.keys(regData[0].values).map((key1, index1) => (
-                      <td key={index1} className="border border-gray-200 p-0.5"><input readOnly value={item.values[key1]} /></td>
-                    ))}
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
-        </div>
-      } */}
             {
                 totalFields.length == 0 && <h1>Loading...</h1>
             }
