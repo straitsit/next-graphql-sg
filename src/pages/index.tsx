@@ -5,6 +5,7 @@ import { Fragment } from 'react';
 import Image from 'next/image'
 import MultiSelect from 'react-multi-select-component';
 import COUNTRY_LIST from '../constants/country_names';
+import LoginLayout from '../components/PageLayout';
 
 const IndexPage = props => {
     const [lazyStart, setLazyStart] = useState(false);
@@ -145,14 +146,19 @@ const IndexPage = props => {
     }
 
     return (
-        <div className="container mx-auto">
-            <div className="text-4xl mx-9 mt-9">First Report Page</div>
-
+        <LoginLayout>
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+          <h1 className="py-8 lg:pt-0 text-2xl text-white">Regulations Map</h1>
+          
+              <section aria-labelledby="profile-overview-title">
+                <div className="rounded-lg bg-white overflow-hidden shadow">
+                  {}
+            
             {
                 totalFields.length != 0 &&
                 <div className="bg-white">
                     <div className="max-w-7xl mx-auto bg-white py-16 sm:py-24 sm:px-6 lg:px-8">
-                        <div className="grid gap-4 xs:grid-cols-1 sm:grid-cols-1 mb-9 md:grid-cols-3 px-4">
+                        <div className="grid gap-4 xs:grid-cols-1 sm:grid-cols-1 mb-9 md:grid-cols-3">
                             <div>
                                 <label htmlFor="">Country</label>
                                 <MultiSelect className="w-full" options={countryOptions} value={selectedCountries} onChange={setCountrySelectC} labelledBy="Select" />
@@ -287,7 +293,12 @@ const IndexPage = props => {
                 totalFields.length == 0 && <h1>Loading...</h1>
             }
 
+</div>
+              </section>
+
+            
         </div>
+        </LoginLayout>
     )
 }
 

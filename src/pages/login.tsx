@@ -17,7 +17,7 @@ const Login = props => {
         try {
             let result = await g_login({ variables: { obj: values } });
             dispatch(setUser({ jwt: result.data.login.jwt, username: result.data.login.user.username }));
-            localStorage.setItem('authToken', result.data.login.jwt);
+            localStorage.setItem('authToken',  JSON.stringify(result.data.login.jwt));
             location.reload();
         } catch (err) {
             console.log(err);
