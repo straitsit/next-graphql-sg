@@ -15,9 +15,9 @@ const COUNTRY_NAMES = {
     LK: 'Sri Lanka',
     AU: 'Australia',
     NZ: 'New Zland',
-    AE: 'United Arab Emirates',
+    DUB: 'Dubai',
     QA: 'Qatar',
-    AZ: 'Azerbaijan'
+    AZE: 'Abu Dhabi'
 }  
 
 export default COUNTRY_NAMES;
