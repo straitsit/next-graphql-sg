@@ -6,7 +6,11 @@ function useStickyStateBase(defaultValue, key) {
     let stickyValue = defaultValue;
   
     if (!isServer() && localStorage.getItem(key) !== null) {
-      stickyValue = JSON.parse(localStorage.getItem(key));
+      try{
+        stickyValue = JSON.parse(localStorage.getItem(key));
+      } catch(err) {
+        console.log(err);
+      }
     }
   
     const [value, setValue] = useState(stickyValue);
@@ -24,7 +28,11 @@ function useStickyState(defaultValue, key, lsexp, setLsexp) {
   
     let stickyValue = defaultValue;
     if (!isServer() && localStorage.getItem(key) !== null && ttl < 3600000) {
-      stickyValue = JSON.parse(localStorage.getItem(key));
+      try {
+        stickyValue = JSON.parse(localStorage.getItem(key));
+      } catch(err) {
+        console.log(err);
+      }
     }
   
     const [value, setValue] = useState(stickyValue);
